@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+bng_textures/
+bench/*.log
+bench/captures/
+dist/
+# build outputs, if produced outside dist/
+*.zip

@@ -1,0 +1,68 @@
+#include "/Engine/Public/Platform.ush"
+
+struct FBngSkinVertex
+{
+    uint4 Nodes;
+    float3 Coords;
+    float3 Residual;
+    float3 Normal;
+    float3 Tangent;
+    float BinormalSign;
+};
+
+StructuredBuffer<float3> Nodes;
+StructuredBuffer<FBngSkinVertex> SkinVertices;
+RWBuffer<float> OutPositions;
+RWBuffer<uint> OutTangents;
+uint VertexCount;
+
+float3 SafeNormalize(float3 V)
+{
+    return V * rsqrt(max(dot(V, V), 1e-12));
+}
+
+uint PackSnorm8(float4 V)
+{
+    int4 Packed = int4(round(clamp(V, -1.0, 1.0) * 127.0)) & 255;
+    return uint(Packed.x | (Packed.y << 8) | (Packed.z << 16) | (Packed.w << 24));
+}
+
+[numthreads(64, 1, 1)]
+void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
+{
+    uint Index = DispatchThreadId.x;
+    if (Index >= VertexCount)
+    {
+        return;
+    }
+
+    FBngSkinVertex Skin = SkinVertices[Index];
+    float3 R = Nodes[Skin.Nodes.x];
+    float3 A = Nodes[Skin.Nodes.y] - R;
+    float3 B = Nodes[Skin.Nodes.z] - R;
+    float3 N = SafeNormalize(cross(B, A));
+    float3 C;
+    if (Skin.Nodes.w == 0xffffffffu)
+    {
+        C = N;
+    }
+    else
+    {
+        C = Nodes[Skin.Nodes.w] - R;
+    }
+
+    float Fx = Skin.Coords.x + Skin.Residual.x / (length(A) + 1e-6);
+    float Fy = Skin.Coords.y + Skin.Residual.y / (length(B) + 1e-6);
+    float Fz = Skin.Coords.z + Skin.Residual.z / (length(C) + 1e-6);
+    float3 Position = R + A * Fx + B * Fy + C * Fz;
+
+    float3 Normal = SafeNormalize(A * Skin.Normal.x + B * Skin.Normal.y + N * Skin.Normal.z);
+    float3 Tangent = A * Skin.Tangent.x + B * Skin.Tangent.y + N * Skin.Tangent.z;
+    Tangent = SafeNormalize(Tangent - Normal * dot(Tangent, Normal));
+
+    OutPositions[Index * 3 + 0] = Position.x;
+    OutPositions[Index * 3 + 1] = Position.y;
+    OutPositions[Index * 3 + 2] = Position.z;
+    OutTangents[Index * 2 + 0] = PackSnorm8(float4(Tangent, 0.0));
+    OutTangents[Index * 2 + 1] = PackSnorm8(float4(Normal, Skin.BinormalSign));
+}
