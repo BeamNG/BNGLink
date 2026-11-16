@@ -58,8 +58,6 @@ Always use the three files from the same release. Parts from different releases 
      %LOCALAPPDATA%\BeamNG\BeamNG.tech\current\mods
    ```
 
-     or on Linux:
-
      Paste the path into the file explorer address bar to open it. Do not unzip the file.
 2. Start BeamNG.tech. **BNGLink** appears in the mod manager and is enabled automatically.
 3. Load a level, press **Esc** and check that the pause menu has a **BNGLink** tab.
@@ -72,14 +70,12 @@ The add-on uses the Numba Python package to deform the vehicles fast enough. Ble
 
 1. Close Blender if it is open.
 2. Open a Command Prompt, PowerShell or Terminal window.
-3. Run this command. Adjust the path to your Blender installation and version. Default for Windows is:
+3. Install Numba in Blender's integrated Python. Adjust the path to your Blender installation and version. Default for Windows is:
    ```
      "C:\Program Files\Blender Foundation\Blender 5.2\5.2\python\bin\python.exe" -m pip install numba
    ```
 
-     or on Linux:
-
-If the installation defaults to your generic python user folder, you can copy the following folders from your sites-packages folder to the lib folder in Blender's Python folder :
+If the installation defaults to your generic python user folder, you can copy the following folders from your site-packages folder to the lib folder in Blender's Python folder :
 
 - numba
 - llvmlite
@@ -103,7 +99,7 @@ The plugin uses the NumPy and Numba Python packages. Unreal does not include the
 
 1. Close Unreal Editor.
 2. Open a Command Prompt, PowerShell or Terminal window.
-3. Run this command. Adjust the path to your Unreal installation and version. Default for Windows is:
+3. Install numpy and numba in Unreal's integrated Python. Adjust the path to your Unreal installation and version. Default for Windows is:
    ```
      "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" -s -m pip install numpy numba
    ```
@@ -117,7 +113,7 @@ The plugin uses the NumPy and Numba Python packages. Unreal does not include the
 5. After the editor starts, the **BNGLink** panel opens automatically.
 
 > [!WARNING]
-> **The plugin must be compiled.** BngLinkBridge is delivered as C++source code, and Unreal compiles it the first time you open the project. This needs **Visual Studio** with the **Game development with C++** workload installed. Check Epic's documentation for the Visual Studio version that matches your Unreal version.
+> **The plugin must be compiled.** BngLinkBridge is delivered as C++ source code, and Unreal compiles it the first time you open the project. This needs **Visual Studio** with the **Game development with C++** workload installed. Check Epic's documentation for the Visual Studio version that matches your Unreal version.
 >
 > **Blueprint-only projects** (projects created without C++) sometimes cannot compile plugins and show an error like *"BngLinkBridge could not be compiled"* instead. In that case, convert the project to a C++ project: open it without the plugin (temporarily move the `BngLinkBridge` folder out of `Plugins`), choose **Tools > New C++ Class**, create an empty class, close the editor, put the plugin folder back and open the project again.
 
@@ -166,7 +162,7 @@ Also make sure that:
 
 ### Realtime link
 
->[!IMPORTANT]
+> [!IMPORTANT]
 >It is always preferable to start the receiver in Blender or Unreal first, and then start the link from BeamNG.
 >By starting the link from BeamNG before the receiver is started, you may run into issues with the link not being able to connect properly.
 
@@ -286,7 +282,7 @@ Use the same BNGLink release for all parts.
 - **One receiver at a time.** BeamNG sends to one receiver, and only one receiver can run per computer and port.
 - **Settings are not saved** in BeamNG and in the Unreal panel. See [Configuration](#configuration).
 - **Blender textures live outside the** `.blend` **file.** They are stored in the add-on's `bng_textures` folder. Use **File > External Data > Pack Resources** before moving or sharing a `.blend` file. **Clear textures cache** deletes the textures of every vehicle that is not in the current scene, including those used by other saved `.blend` files.
-- **T**he link uses unencrypted UDP without authentication. Use it on a trusted local network only.
+- **The link uses unencrypted UDP without authentication.** Use it on a trusted local network only.
 
 ## Troubleshooting
 
