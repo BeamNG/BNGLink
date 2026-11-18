@@ -1,5 +1,6 @@
 import bpy
 
+EMISSIVE_NITS_SCALE = 1.0 / 1000.0
 PAINT_SCALAR_DEFAULTS = {'metallic': 0.0, 'roughness': 0.5, 'clearcoat': 0.0, 'clearcoatRoughness': 1.0}
 WHITE = (1.0, 1.0, 1.0, 1.0)
 FLAT_NORMAL = (0.0, 0.0, 1.0)
@@ -202,7 +203,7 @@ def _layer_emissive(g, layer):
         result = g.mul_color(texture.outputs['Color'], result)
     intensity = layer.get('emissiveIntensity')
     if intensity is not None and intensity >= 0:
-        result = g.vmath('SCALE', result, scale=intensity)
+        result = g.vmath('SCALE', result, scale=intensity * EMISSIVE_NITS_SCALE)
     return result
 
 
@@ -243,6 +244,8 @@ def layer_values(g, material_def):
             'anisotropy': g.value(layer.get('anisotropy', 0.0)),
             'normal': _layer_normal(g, layer),
         }
+        adds_coverage = layer.get('opacityTexture') is not None or layer.get('detailOpacityTexture') is not None
+        values['coverage'] = values['opacity'] if adds_coverage else None
         if layer.get('legacyEmissive'):
             values['emissive'] = values['base']
             values['base'] = g.rgb((0.0, 0.0, 0.0, 1.0))
@@ -251,8 +254,9 @@ def layer_values(g, material_def):
     result = dict(layers[0])
     for layer in layers[1:]:
         _blend_layer(g, result, layer, LAYER_MIX_TYPES)
-        under = g.math('MULTIPLY', result['opacity'], g.math('SUBTRACT', 1.0, layer['opacity']))
-        result['opacity'] = g.math('ADD', layer['opacity'], under)
+        if layer['coverage'] is not None:
+            under = g.math('MULTIPLY', result['opacity'], g.math('SUBTRACT', 1.0, layer['coverage']))
+            result['opacity'] = g.math('ADD', layer['coverage'], under)
     result['normal'] = g.vmath('NORMALIZE', result['normal'])
     return result, layers
 

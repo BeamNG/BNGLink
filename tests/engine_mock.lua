@@ -257,7 +257,7 @@ local materials = {
   ['door_mat.skin_pickup.red'] = material({[0] = {instanceDiffuse = '1', colorMap = '/vehicles/t/door_red.jpg'}}),
   mirror_mat = material({
     [0] = {version = '1.5', activeLayers = '2', baseColorMap = '@screen', opacityMap = '/vehicles/t/mirror_o.png', opacityMapUseUV = '1'},
-    [1] = {baseColorMap = '/vehicles/t/overlay.png', diffuseMapUseUV = '1'},
+    [1] = {baseColorMap = '/vehicles/t/overlay.png', diffuseMapUseUV = '1', baseColorFactor = '1 1 1 0.35'},
   }),
   plate_mat = material({[0] = {version = '1.5', baseColorMap = '@licenseplate-default', normalMap = '@licenseplate-default-normal'}}),
   decal_mat = material({[0] = {version = '1.5', baseColorMap = '@DynamicTextureBaseColor', colorPaletteMap = '@DynamicTextureColorPalette',

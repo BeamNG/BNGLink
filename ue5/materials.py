@@ -4,6 +4,7 @@ import re
 
 import unreal
 
+EMISSIVE_NITS_SCALE = 1.0 / 1000.0
 EMISSIVE_SCALE_PARAMETER = 'BNGLinkEmissiveScale'
 MATERIALS_PATH = '/Game/BNGLink/Generated/Shared/Materials'
 COLOR = unreal.MaterialSamplerType.SAMPLERTYPE_COLOR
@@ -166,7 +167,7 @@ def _layer_emissive(g, layer):
         result = g.mul((g.sample(layer['emissiveTexture'], COLOR, layer.get('emissiveUseUV1')), ''), result)
     intensity = layer.get('emissiveIntensity')
     if intensity is not None and intensity >= 0:
-        result = g.mul(result, intensity)
+        result = g.mul(result, intensity * EMISSIVE_NITS_SCALE)
     return result
 
 
@@ -211,16 +212,19 @@ def layer_values(g, material_def):
             'anisotropy': g.const(layer.get('anisotropy', 0.0)),
             'normal': _layer_normal(g, layer),
         }
+        adds_coverage = layer.get('opacityTexture') is not None or layer.get('detailOpacityTexture') is not None
+        values['coverage'] = values['opacity'] if adds_coverage else None
         if layer.get('legacyEmissive'):
             values['emissive'] = values['base']
             values['base'] = g.rgb((0.0, 0.0, 0.0))
         layers.append(values)
 
     result = dict(layers[0])
-    blended_keys = [key for key in result if key != 'opacity']
+    blended_keys = [key for key in result if key not in ('opacity', 'coverage')]
     for layer in layers[1:]:
         _blend_layer(g, result, layer, blended_keys)
-        result['opacity'] = g.add(layer['opacity'], g.mul(result['opacity'], g.sub(1.0, layer['opacity'])))
+        if layer['coverage'] is not None:
+            result['opacity'] = g.add(layer['coverage'], g.mul(result['opacity'], g.sub(1.0, layer['coverage'])))
     result['normal'] = g.op('Normalize', VectorInput=result['normal'])
     return result, layers
 

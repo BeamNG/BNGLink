@@ -439,7 +439,7 @@ local function buildMaterialLayers(ctx, mat, pbr15)
   for layerIndex = 0, activeLayerCount(mat) - 1 do
     local baseColorFactor = linearColor(mat, pbr15 and 'baseColorFactor' or 'diffuseColor', layerIndex)
     local opacityFactor = number(mat, 'opacityFactor', layerIndex)
-    if not pbr15 and baseColorFactor and baseColorFactor[4] then
+    if baseColorFactor and baseColorFactor[4] then
       opacityFactor = (opacityFactor or 1) * baseColorFactor[4]
     end
     local layer = {
